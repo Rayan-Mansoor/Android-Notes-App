@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@color/black"/>
+    <item android:drawable="@drawable/ic_notessvg" android:gravity="center"/>
+    <item>
+
+        <shape
+            android:visible="true"
+            android:shape="ring"
+            android:tint="@color/white"
+            android:innerRadiusRatio="10.4"
+            android:thicknessRatio="10.0"/>
+    </item>
+</layer-list>

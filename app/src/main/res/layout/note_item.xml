@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/rounded_corners"
+    android:backgroundTint="@color/white"
+    android:foregroundTint="@color/black"
+    android:padding="10dp">
+
+    <TextView
+        android:id="@+id/info_title"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:text="Title"
+        android:textColor="#000000"
+        android:textSize="28sp"
+        android:textStyle="bold|italic"
+        app:autoSizeTextType="uniform"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/info_disc"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:text="Content"
+        android:textColor="#000000"
+        android:textSize="20sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/info_title" />
+
+    <TextView
+        android:id="@+id/info_time"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="TimeStamp"
+        android:textColor="#111111"
+        android:textSize="13sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/info_disc" />
+</androidx.constraintlayout.widget.ConstraintLayout>
