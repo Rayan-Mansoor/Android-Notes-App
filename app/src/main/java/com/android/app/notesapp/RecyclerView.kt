@@ -1,7 +1,6 @@
 package com.android.app.notesapp
 
 import android.content.Intent
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,7 +8,6 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.firebase.ui.firestore.FirestoreRecyclerAdapter
 import com.firebase.ui.firestore.FirestoreRecyclerOptions
-import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 
 class NotesViewAdapter(options: FirestoreRecyclerOptions<Note>) : FirestoreRecyclerAdapter<Note,NotesViewAdapter.NotesViewHolder>(options){
@@ -32,7 +30,7 @@ class NotesViewAdapter(options: FirestoreRecyclerOptions<Note>) : FirestoreRecyc
         holder.timestamp.setText(formatedDate)
 
         holder.itemView.setOnClickListener {
-            val intent = Intent(it.context,AddNote::class.java)
+            val intent = Intent(it.context,AddNoteActivity::class.java)
             intent.putExtra("title",model.title)
             intent.putExtra("content",model.content)
             intent.putExtra("id",snapshots.getSnapshot(position).id)
