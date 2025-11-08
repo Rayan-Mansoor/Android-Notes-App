@@ -2,4 +2,31 @@
     <string name="app_name">Notes App</string>
     <string name="sign_in_label">Sign In</string>
 
+    <!-- Home / actions -->
+    <string name="notes_header">Notes</string>
+    <string name="logout">Logout</string>
+    <string name="search_hint">Search your thoughts...</string>
+    <string name="add_note">Add new note</string>
+    <string name="delete_selected">Delete</string>
+    <string name="cancel_selection">Cancel</string>
+    <string name="selected">Selected</string>
+
+    <!-- Add / Edit -->
+    <string name="new_note_title">New Note</string>
+    <string name="update_note_title">Update Note</string>
+    <string name="note_title_hint">Title</string>
+    <string name="note_content_hint">Pour your thoughts here...</string>
+    <string name="save_note">Save</string>
+    <string name="cancel">Cancel</string>
+
+    <!-- Relative time (optional if you later localize) -->
+    <string name="just_now">Just now</string>
+    <string name="yesterday">Yesterday</string>
+
+    <!-- Categories (for accessibility / future filters) -->
+    <string name="category_personal">Personal</string>
+    <string name="category_work">Work</string>
+    <string name="category_study">Study</string>
+    <string name="category_ideas">Ideas</string>
+    <string name="category_other">Other</string>
 </resources>

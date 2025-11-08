@@ -1,6 +1,5 @@
 package com.android.app.notesapp
 
-import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -9,40 +8,58 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.android.app.notesapp.databinding.ActivityAddNoteBinding
 import com.google.firebase.Timestamp
-import com.google.firebase.firestore.DocumentReference
 
 class AddNoteActivity : AppCompatActivity() {
     private lateinit var binding: ActivityAddNoteBinding
-    private lateinit var document: DocumentReference
-    private var isEditMode: Boolean = false
-    private var recieveID: String? = null
+
+    private var isEditMode = false
+    private var receiveID: String? = null
+    private var selectedCategory: NoteCategory = NoteCategory.OTHER
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityAddNoteBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val recieveTitle = intent.getStringExtra("title")
-        val recieveContent = intent.getStringExtra("content")
-        recieveID = intent.getStringExtra("id")
+        // incoming extras (for edit)
+        val titleIn = intent.getStringExtra("title")
+        val contentIn = intent.getStringExtra("content")
+        val catIn = intent.getStringExtra("category")
+        receiveID = intent.getStringExtra("id")
 
-        if (recieveID != null) {
-            isEditMode = true
-            binding.titleET.setText(recieveTitle)
-            binding.contentET.setText(recieveContent)
-            binding.addEdit.text = "Update Note"
-            binding.delNoteBtn.visibility = View.VISIBLE
+        if (!catIn.isNullOrBlank()) {
+            selectedCategory = runCatching { NoteCategory.valueOf(catIn) }
+                .getOrDefault(NoteCategory.OTHER)
         }
+
+        if (receiveID != null) {
+            isEditMode = true
+            binding.titleET.setText(titleIn)
+            binding.contentET.setText(contentIn)
+            binding.addEdit.text = "Update Note"
+        } else {
+            binding.addEdit.text = "New Note"
+        }
+
+        // Color picker highlight
+        reflectCategoryUi()
+
+        // Clicks for color dots
+        binding.colorPersonal.setOnClickListener { setCategory(NoteCategory.PERSONAL) }
+        binding.colorWork.setOnClickListener     { setCategory(NoteCategory.WORK) }
+        binding.colorStudy.setOnClickListener    { setCategory(NoteCategory.STUDY) }
+        binding.colorIdeas.setOnClickListener    { setCategory(NoteCategory.IDEAS) }
+        binding.colorOther.setOnClickListener    { setCategory(NoteCategory.OTHER) }
 
         binding.saveNoteBtn.setOnClickListener {
             if (binding.titleET.text.isNullOrEmpty()) {
-                binding.titleET.error = "Title not given"
+                binding.titleET.error = "Title is required"
             } else {
                 saveNote()
             }
         }
 
-        binding.delNoteBtn.setOnClickListener { deleteNote() }
+        binding.cancelBtn.setOnClickListener { finish() }
 
         binding.titleET.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
@@ -53,41 +70,46 @@ class AddNoteActivity : AppCompatActivity() {
         })
     }
 
-    private fun deleteNote() {
-        val id = recieveID ?: return
-        document = FirebaseRefs.getNoteDoc(id)
-        document.delete().addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                Toast.makeText(applicationContext, "Note deleted successfully", Toast.LENGTH_SHORT).show()
-                startActivity(Intent(this, MainActivity::class.java))
-                finish()
-            } else {
-                Toast.makeText(applicationContext, "Error occurred while deleting the note", Toast.LENGTH_SHORT).show()
-            }
+    private fun setCategory(cat: NoteCategory) {
+        selectedCategory = cat
+        reflectCategoryUi()
+    }
+
+    private fun reflectCategoryUi() {
+        // simple ring highlight – show only on selected
+        val views = listOf(
+            binding.colorPersonal to NoteCategory.PERSONAL,
+            binding.colorWork to NoteCategory.WORK,
+            binding.colorStudy to NoteCategory.STUDY,
+            binding.colorIdeas to NoteCategory.IDEAS,
+            binding.colorOther to NoteCategory.OTHER
+        )
+        views.forEach { (v, cat) ->
+            v.foreground = if (cat == selectedCategory)
+                getDrawable(R.drawable.color_selected_ring) else null
         }
     }
 
     private fun saveNote() {
-        val title = binding.titleET.text.toString()
-        val content = binding.contentET.text.toString()
-        val note = Note(title, content, Timestamp.now())
-        saveNoteToFirebase(note)
-    }
+        val note = Note(
+            title = binding.titleET.text.toString(),
+            content = binding.contentET.text.toString(),
+            timestamp = Timestamp.now(),
+            category = selectedCategory.name
+        )
 
-    private fun saveNoteToFirebase(note: Note) {
-        document = if (isEditMode) {
-            FirebaseRefs.getNoteDoc(recieveID!!)
+        val docRef = if (isEditMode) {
+            FirebaseRefs.getNoteDoc(receiveID!!)
         } else {
             FirebaseRefs.addNoteDoc()
         }
 
-        document.set(note).addOnCompleteListener { task ->
+        docRef.set(note).addOnCompleteListener { task ->
             if (task.isSuccessful) {
-                Toast.makeText(applicationContext, "Note saved successfully", Toast.LENGTH_SHORT).show()
-                startActivity(Intent(this, MainActivity::class.java))
+                Toast.makeText(applicationContext, "Note saved", Toast.LENGTH_SHORT).show()
                 finish()
             } else {
-                Toast.makeText(applicationContext, "Note was not saved", Toast.LENGTH_SHORT).show()
+                Toast.makeText(applicationContext, "Failed to save", Toast.LENGTH_SHORT).show()
             }
         }
     }

@@ -8,7 +8,7 @@
     android:background="@drawable/bg_gradient"
     tools:context=".MainActivity">
 
-    <!-- Decorative gradient blobs (optional, for extra visual interest) -->
+    <!-- Optional background blobs -->
     <View
         android:id="@+id/blob1"
         android:layout_width="300dp"
@@ -31,7 +31,7 @@
         android:translationX="80dp"
         android:translationY="80dp" />
 
-    <!-- Header Section -->
+    <!-- Header -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/header_section"
         android:layout_width="0dp"
@@ -63,23 +63,24 @@
             app:layout_constraintStart_toEndOf="@id/sparkle_icon"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
+            app:layout_constraintEnd_toStartOf="@id/logout_btn" />
 
-        <TextView
-            android:id="@+id/subtitle"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:text="Your thoughts, captured"
-            android:textSize="14sp"
-            android:textColor="@color/text_white_secondary"
-            android:layout_marginStart="12dp"
-            android:layout_marginTop="4dp"
-            app:layout_constraintStart_toEndOf="@id/sparkle_icon"
-            app:layout_constraintTop_toBottomOf="@id/header_title"
-            app:layout_constraintEnd_toEndOf="parent" />
+        <!-- Logout icon (replaces menu) -->
+        <ImageButton
+            android:id="@+id/logout_btn"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:background="@drawable/glass_icon_bg"
+            android:contentDescription="Logout"
+            android:padding="12dp"
+            android:src="@drawable/ic_baseline_logout_24"
+            app:tint="@color/text_white"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <!-- Search Bar (Glassmorphism) -->
+    <!-- Search -->
     <androidx.cardview.widget.CardView
         android:id="@+id/search_card"
         android:layout_width="0dp"
@@ -121,14 +122,14 @@
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 
-    <!-- Notes RecyclerView with Glass Card -->
+    <!-- Notes list -->
     <androidx.cardview.widget.CardView
         android:id="@+id/notes_card"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginHorizontal="24dp"
         android:layout_marginTop="16dp"
-        android:layout_marginBottom="24dp"
+        android:layout_marginBottom="94dp"
         app:cardCornerRadius="24dp"
         app:cardElevation="0dp"
         app:cardBackgroundColor="@color/glass_white"
@@ -146,7 +147,53 @@
             tools:listitem="@layout/note_item" />
     </androidx.cardview.widget.CardView>
 
-    <!-- Floating Action Button with Gradient -->
+    <!-- Selection toolbar (appears during multi-select) -->
+    <LinearLayout
+        android:id="@+id/selection_toolbar"
+        android:layout_width="0dp"
+        android:layout_height="64dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="16dp"
+        android:background="@color/glass_white"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <TextView
+            android:id="@+id/selection_count"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textColor="@color/text_white"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:text="0 selected"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/cancel_selection_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Cancel"
+            app:backgroundTint="@color/glass_white"
+            app:strokeColor="@color/glass_border"
+            app:strokeWidth="1dp"
+            app:cornerRadius="16dp"
+            android:textColor="@color/text_white"/>
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/delete_selected_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:src="@drawable/ic_baseline_delete_24"
+            app:tint="@color/text_white"
+            app:fabSize="mini"
+            app:backgroundTint="#D32F2F"/>
+    </LinearLayout>
+
+    <!-- FAB -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/new_note"
         android:layout_width="wrap_content"
