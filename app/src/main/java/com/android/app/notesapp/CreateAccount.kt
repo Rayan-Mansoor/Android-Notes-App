@@ -1,96 +1,73 @@
 package com.android.app.notesapp
 
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.text.Editable
-import android.text.TextWatcher
 import android.util.Patterns
 import android.view.View
+import android.view.inputmethod.EditorInfo
+import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import com.android.app.notesapp.databinding.ActivityCreateAccountBinding
 
 class CreateAccount : AppCompatActivity() {
     private lateinit var binding: ActivityCreateAccountBinding
-    private var isInfoValid: Boolean = false
+    private var createBtnLabel: CharSequence? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityCreateAccountBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        binding.regEmail.hint = "Email Address"
-        binding.regPassword.hint = "Password"
-        binding.regRetypePassword.hint = "Confirm Password"
+        createBtnLabel = binding.regAccBtn.text
 
-        binding.regEmail.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                binding.regEmail.hint = if (binding.regEmail.text.isNullOrEmpty()) "Email Address" else null
-            }
-            override fun afterTextChanged(s: Editable?) {}
-        })
+        // Email: validate on focus loss (trim + normalize UI)
         binding.regEmail.setOnFocusChangeListener { _, hasFocus ->
             if (hasFocus) {
                 binding.textInputLayout3.error = null
             } else {
-                val email = binding.regEmail.text.toString().trim()
-                if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-                    isInfoValid = false
-                    binding.textInputLayout3.error = "Invalid Email"
-                } else {
-                    isInfoValid = true
-                }
+                val email = binding.regEmail.text?.toString()?.trim().orEmpty()
+                if (email.isNotEmpty()) binding.regEmail.setText(email)
+                binding.textInputLayout3.error =
+                    if (email.isEmpty() || !Patterns.EMAIL_ADDRESS.matcher(email).matches())
+                        "Invalid Email" else null
             }
         }
 
-        binding.regPassword.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                binding.regPassword.hint = if (binding.regPassword.text.isNullOrEmpty()) "Password" else null
-            }
-            override fun afterTextChanged(s: Editable?) {}
-        })
+        // Password: length check on focus loss
         binding.regPassword.setOnFocusChangeListener { _, hasFocus ->
             if (hasFocus) {
                 binding.textInputLayout.error = null
             } else {
-                if (binding.regPassword.text.toString().length < 6) {
-                    isInfoValid = false
-                    binding.textInputLayout.error = "Password must be at least 6 characters"
-                } else {
-                    isInfoValid = true
-                }
+                val pass = binding.regPassword.text?.toString().orEmpty()
+                binding.textInputLayout.error =
+                    if (pass.length < 6) "Password must be at least 6 characters" else null
             }
         }
 
-        binding.regRetypePassword.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                binding.regRetypePassword.hint =
-                    if (binding.regRetypePassword.text.isNullOrEmpty()) "Confirm Password" else null
-            }
-            override fun afterTextChanged(s: Editable?) {}
-        })
+        // Confirm: match check on focus loss
         binding.regRetypePassword.setOnFocusChangeListener { _, hasFocus ->
             if (hasFocus) {
                 binding.textInputLayout2.error = null
             } else {
-                val pass = binding.regPassword.text.toString()
-                val confirm = binding.regRetypePassword.text.toString()
-                if (confirm.length < 6 || pass != confirm) {
-                    isInfoValid = false
-                    binding.textInputLayout2.error = "Passwords don't match"
-                } else {
-                    isInfoValid = true
-                }
+                val pass = binding.regPassword.text?.toString().orEmpty()
+                val confirm = binding.regRetypePassword.text?.toString().orEmpty()
+                binding.textInputLayout2.error =
+                    if (confirm.length < 6 || pass != confirm) "Passwords don't match" else null
             }
         }
 
+        // "Go" on confirm: hide keyboard and submit
+        binding.regRetypePassword.setOnEditorActionListener { _, actionId, _ ->
+            if (actionId == EditorInfo.IME_ACTION_GO) {
+                hideKeyboard()
+                binding.regAccBtn.performClick()
+                true
+            } else false
+        }
+
         binding.regAccBtn.setOnClickListener {
-            binding.regEmail.clearFocus()
-            binding.regPassword.clearFocus()
-            binding.regRetypePassword.clearFocus()
+            hideKeyboard()
             createAcc()
         }
 
@@ -102,16 +79,11 @@ class CreateAccount : AppCompatActivity() {
         finish()
     }
 
-    private fun setProgressBar(progress: Boolean) {
-        binding.progressBar.visibility = if (progress) View.VISIBLE else View.INVISIBLE
-    }
-
     private fun createAcc() {
-        val email = binding.regEmail.text.toString().trim()
-        val pass = binding.regPassword.text.toString()
-        val confirm = binding.regRetypePassword.text.toString()
+        val email = binding.regEmail.text?.toString()?.trim().orEmpty()
+        val pass = binding.regPassword.text?.toString().orEmpty()
+        val confirm = binding.regRetypePassword.text?.toString().orEmpty()
 
-        // Final in-place validation (authoritative; independent of focus listeners)
         var ok = true
         if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
             binding.textInputLayout3.error = "Invalid Email"; ok = false
@@ -126,20 +98,19 @@ class CreateAccount : AppCompatActivity() {
         } else binding.textInputLayout2.error = null
 
         if (!ok) {
-            Toast.makeText(applicationContext, "Invalid Data Entered", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Invalid Data Entered", Toast.LENGTH_SHORT).show()
             return
         }
 
-        setProgressBar(true)
-        FirebaseRefs.auth
-            .createUserWithEmailAndPassword(email, pass)
+        setLoading(true)
+        FirebaseRefs.auth.createUserWithEmailAndPassword(email, pass)
             .addOnCompleteListener(this) { task ->
-                setProgressBar(false)
+                setLoading(false)
                 if (task.isSuccessful) {
                     FirebaseRefs.auth.currentUser?.sendEmailVerification()
                     Toast.makeText(
-                        applicationContext,
-                        "Account created. Verify your email before logging in.",
+                        this,
+                        "Account created Successfully.",
                         Toast.LENGTH_SHORT
                     ).show()
                     FirebaseRefs.auth.signOut()
@@ -150,5 +121,19 @@ class CreateAccount : AppCompatActivity() {
                     Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
                 }
             }
+    }
+
+    /** Disable button and show in-button spinner */
+    private fun setLoading(loading: Boolean) {
+        binding.regAccBtn.isEnabled = !loading
+        binding.btnProgress.visibility = if (loading) View.VISIBLE else View.GONE
+        binding.regAccBtn.text = if (loading) "" else createBtnLabel
+    }
+
+    private fun hideKeyboard() {
+        currentFocus?.windowToken?.let {
+            val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+            imm.hideSoftInputFromWindow(it, 0)
+        }
     }
 }

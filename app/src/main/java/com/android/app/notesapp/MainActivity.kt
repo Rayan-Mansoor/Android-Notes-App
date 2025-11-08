@@ -32,28 +32,33 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // Check authentication first
         if (FirebaseRefs.uid == null) {
             startActivity(Intent(this, LoginAccount::class.java))
             finish()
             return
         }
 
+        // Inflate binding and set content view
         binding = ActivityMainBinding.inflate(layoutInflater)
-        setTheme(R.style.Theme_NotesApp)
         setContentView(binding.root)
 
+        // Setup FAB click listener
         binding.newNote.setOnClickListener {
             startActivity(Intent(this, AddNoteActivity::class.java))
         }
 
+        // Setup RecyclerView with Firestore options
         val options = FirestoreRecyclerOptions.Builder<Note>()
             .setQuery(FirebaseRefs.userNotesDesc(), Note::class.java)
             .build()
 
         notesAdapter = NotesViewAdapter(options)
-        binding.notesView.layoutManager = LinearLayoutManager(this)
-        binding.notesView.adapter = notesAdapter
-        binding.notesView.addItemDecoration(NotesItemDecorator(20))
+        binding.notesView.apply {
+            layoutManager = LinearLayoutManager(this@MainActivity)
+            adapter = notesAdapter
+            addItemDecoration(NotesItemDecorator(20))
+        }
     }
 
     override fun onStart() {
